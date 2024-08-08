@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import status, permissions, viewsets
 from rest_framework.response import Response
 
@@ -18,17 +17,18 @@ class OrderDetails(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         order = Order.objects.filter(orderId=pk, is_removed=False).first()
         if not order:
-            return Response({'message': 'Order with given Id not Found', 'orderDetails':[],
+            return Response({'message': 'Order with given Id not Found', 'orderDetails': [],
                              'status': status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
         order_serializers = OrderSerializer(order)
         return Response({'message': 'Order Retrieved Successfully', 'orderDetails': order_serializers.data,
                          'status': status.HTTP_200_OK}, status=status.HTTP_200_OK)
 
-    def create(self, request):
+    def create(self, request, **kwargs):
         if request.data:
             order_serializers = OrderSerializer(data=request.data)
             order_serializers.is_valid(raise_exception=True)
             order_serializers.save()
+            # send_order_notification.send(sender=self.__class__, instance=order_serializers, created=True)
             return Response({'message': 'Order Placed Successfully', 'orderDetails': order_serializers.data,
                              'status': status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 
@@ -39,4 +39,5 @@ class OrderDetails(viewsets.ViewSet):
                             status=status.HTTP_404_NOT_FOUND)
         order.is_removed = True
         order.save()
-        return Response({'message': 'Order Cancelled Successfully', 'status': status.HTTP_204_NO_CONTENT}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Order Cancelled Successfully', 'status': status.HTTP_204_NO_CONTENT},
+                        status=status.HTTP_204_NO_CONTENT)

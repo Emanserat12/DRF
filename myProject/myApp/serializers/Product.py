@@ -13,7 +13,8 @@ class ProductSerializer(serializers.ModelSerializer):
             'price': {'required': True},
             'description': {'required': True},
             'category': {'required': True},
-            'inStock': {'read_only': True}
+            'inStock': {'read_only': True},
+            'inventory': {'required': True}
         }
 
     def validate_price(self, price_):
@@ -26,6 +27,7 @@ class ProductSerializer(serializers.ModelSerializer):
         instance.description = validated_data.get('description', instance.description)
         instance.price = validated_data.get('price', instance.price)
         instance.category = validated_data.get('category', instance.category)
+        instance.inventory = validated_data.get('inventory', instance.inventory)
         instance.save()
         return instance
 

@@ -25,19 +25,28 @@ class OrderSerializer(serializers.ModelSerializer):
 
     def validate_noOfItems(self, item_count):
         if item_count < 1:
-            raise serializers.ValidationError('Please select at least one product to place your order.')
+            raise serializers.ValidationError({
+                'status': 400,
+                'message': f'Please select at least one product to place your order.'})
         return item_count
 
     def get_totalBill(self, obj):
-        return obj.noOfItems * obj.productId.price
+        return obj['noOfItems'] * obj['productId'].price
+
+    def check_inventory(self, obj):
+        if obj['noOfItems'] > obj['productId'].inventory:
+            items_ = obj['productId'].inventory
+            raise serializers.ValidationError({
+                'status': 400,
+                'message': f'Only {items_} items available, please add no of products only from available stock.',
+            })
 
     def create(self, validated_data):
+        self.check_inventory(validated_data)
+        validated_data['totalBill'] = self.get_totalBill(validated_data)
+        validated_data['orderedAt'] = int(datetime.datetime.now().timestamp())
         product = validated_data.pop('productId')
         user = validated_data.pop('userId')
-
-        validated_data['totalBill'] = validated_data['noOfItems'] * product.price
-        validated_data['orderedAt'] = int(datetime.datetime.now().timestamp())
-
         order = Order.objects.create(productId=product, userId=user, **validated_data)
         return order
 

@@ -10,6 +10,7 @@ class Products(models.Model):
     name = models.CharField(max_length=255, unique=True, null=False)
     description = models.TextField()
     inStock = models.BooleanField(default=True)
+    inventory = models.IntegerField(default=0, null=True)
     price = models.DecimalField(max_digits=5, decimal_places=2, default=0.0)
     category = models.CharField(max_length=255, unique=True, null=False)
     is_removed = models.BooleanField(default=False)
