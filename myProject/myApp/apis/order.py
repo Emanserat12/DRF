@@ -28,7 +28,6 @@ class OrderDetails(viewsets.ViewSet):
             order_serializers = OrderSerializer(data=request.data)
             order_serializers.is_valid(raise_exception=True)
             order_serializers.save()
-            # send_order_notification.send(sender=self.__class__, instance=order_serializers, created=True)
             return Response({'message': 'Order Placed Successfully', 'orderDetails': order_serializers.data,
                              'status': status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
 

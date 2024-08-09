@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+from django.db.models.signals import pre_save
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
 from rest_framework.generics import get_object_or_404
@@ -7,6 +9,8 @@ from rest_framework.views import APIView
 from myApp.models import Products
 from myApp.serializers.Product import ProductSerializer
 from django.shortcuts import get_object_or_404
+
+from signals import product_fetched
 
 
 class ProductClass(APIView):
@@ -40,6 +44,7 @@ class ProductClass(APIView):
         else:
             query_set = Products.objects.filter(is_removed=False)
             serializer_ = ProductSerializer(query_set, many=True)
+            product_fetched.send(sender=Products, instance=query_set)
             return Response(
                 {'message': 'Products Retrieved Successfully', 'data': serializer_.data, 'status': status.HTTP_200_OK},
             )
@@ -66,7 +71,7 @@ class ProductClass(APIView):
                 return Response({'message': 'Product not found', 'status': status.HTTP_404_NOT_FOUND},
                                 status=status.HTTP_404_NOT_FOUND)
 
-            serializer = ProductSerializer(product, data=request.data, partial=True)  # Partial update
+            serializer = ProductSerializer(product, data=request.data, partial=True)
             if serializer.is_valid(raise_exception=True):
                 serializer.save()
                 return Response({

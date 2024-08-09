@@ -27,7 +27,7 @@ class OrderSerializer(serializers.ModelSerializer):
         if item_count < 1:
             raise serializers.ValidationError({
                 'status': 400,
-                'message': f'Please select at least one product to place your order.'})
+                'message': 'Please select at least one product to place your order.'})
         return item_count
 
     def get_totalBill(self, obj):
